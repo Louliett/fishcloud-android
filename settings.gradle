@@ -1,0 +1,2 @@
+rootProject.name='FishCloud'
+include ':app'
