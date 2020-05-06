@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/camera_nav">
+    <fragment
+        android:id="@+id/camera_nav"
+        android:name="com.example.fishcloud.ui.camera.CameraFragment"
+        android:label="fragment_camera"
+        tools:layout="@layout/fragment_camera" />
+    <fragment
+        android:id="@+id/maps_nav"
+        android:name="com.example.fishcloud.ui.map.MapsFragment"
+        android:label="fragment_maps"
+        tools:layout="@layout/fragment_maps" />
+    <fragment
+        android:id="@+id/list_nav"
+        android:name="com.example.fishcloud.ui.list.ListFragment"
+        android:label="fragment_list"
+        tools:layout="@layout/fragment_list" />
+    <action android:id="@+id/action_global_camera_nav" app:destination="@id/camera_nav" />
+    <action android:id="@+id/action_global_list_nav" app:destination="@id/list_nav" />
+    <action android:id="@+id/action_global_maps_nav" app:destination="@id/maps_nav" />
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.fishcloud.ui.login.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" />
+</navigation>

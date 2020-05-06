@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.annotation.NonNull;
 
-import com.example.fishcloud.data.LoginDataSource;
-import com.example.fishcloud.data.LoginRepository;
+import com.example.fishcloud.data.login.LoginDataSource;
+import com.example.fishcloud.data.login.LoginRepository;
 
 /**
  * ViewModel provider factory to instantiate LoginViewModel.

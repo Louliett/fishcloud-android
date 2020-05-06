@@ -1,4 +1,4 @@
-package com.example.fishcloud.data;
+package com.example.fishcloud.data.login;
 
 /**
  * A generic class that holds a result success w/ data or an error exception.

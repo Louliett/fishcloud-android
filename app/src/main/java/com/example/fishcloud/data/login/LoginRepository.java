@@ -1,4 +1,4 @@
-package com.example.fishcloud.data;
+package com.example.fishcloud.data.login;
 
 import com.example.fishcloud.data.model.LoggedInUser;
 
