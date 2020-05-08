@@ -1,44 +1,41 @@
 package com.example.fishcloud.ui.login;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import android.util.Patterns;
-
 import com.example.fishcloud.data.login.LoginRepository;
-import com.example.fishcloud.data.login.Result;
-import com.example.fishcloud.data.model.LoggedInUser;
-import com.example.fishcloud.R;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 public class LoginViewModel extends ViewModel {
-
-    private MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
-    private MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
-    private LoginRepository loginRepository;
-
-    LoginViewModel(LoginRepository loginRepository) {
-        this.loginRepository = loginRepository;
+    public enum AuthenticationState {
+        UNAUTHENTICATED,        // Initial state, the user needs to authenticate
+        AUTHENTICATED,          // The user has authenticated successfully
+        INVALID_AUTHENTICATION  // Authentication failed
     }
 
-    LiveData<LoginFormState> getLoginFormState() {
-        return loginFormState;
+    final public MutableLiveData<AuthenticationState> authenticationState =
+            new MutableLiveData<>();
+    public String displayName;
+
+
+    public LoginViewModel() {
+
+        authenticationState.setValue(AuthenticationState.UNAUTHENTICATED);
+        displayName = "";
     }
 
-    LiveData<LoginResult> getLoginResult() {
-        return loginResult;
-    }
 
-    public void login(String username, String password) {
-        // can be launched in a separate asynchronous job
-        Result<LoggedInUser> result = loginRepository.login(username, password);
-
-        if (result instanceof Result.Success) {
-            LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
-            loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
+    public void authenticate(GoogleSignInAccount account) {
+        if (account != null) {
+            authenticationState.setValue(AuthenticationState.AUTHENTICATED);
+            displayName = account.getDisplayName();
         } else {
-            loginResult.setValue(new LoginResult(R.string.login_failed));
+            authenticationState.setValue(AuthenticationState.INVALID_AUTHENTICATION);
         }
+    }
+
+    public void revokeAuth() {
+        authenticationState.setValue(AuthenticationState.UNAUTHENTICATED);
     }
 
 }

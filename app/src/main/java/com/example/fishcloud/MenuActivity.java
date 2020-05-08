@@ -4,10 +4,14 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -17,38 +21,51 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fishcloud.adapters.MyAdapter;
 import com.example.fishcloud.interfaces.RecyclerViewClickListener;
-
 import com.example.fishcloud.ui.camera.CameraFragmentDirections;
 import com.example.fishcloud.ui.list.ListFragmentDirections;
+import com.example.fishcloud.ui.login.LoginViewModel;
 import com.example.fishcloud.ui.map.MapsFragmentDirections;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
-
-import java.util.List;
 
 public class MenuActivity extends AppCompatActivity implements RecyclerViewClickListener {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private NavController navController;
-
-    private RecyclerView mRecyclerView;
-    private Integer[] myDataset;
-
+    private Integer[] iconIds;
     private AppBarConfiguration mAppBarConfiguration;
+
+    private DrawerLayout mDrawerLayout;
+    private LoginViewModel loginViewModel;
+
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final Toolbar toolbar = findViewById(R.id.toolbar);
+        NavigationView navigationView = findViewById(R.id.nav_view);
 
-        myDataset = new Integer[4];
-        myDataset[0] = R.drawable.camera_icon;
-        myDataset[1] = R.drawable.history_list_icon;
-        myDataset[2] = R.drawable.maps_icon;
-        myDataset[3] = R.drawable.settings_icon;
+        loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        iconIds = new Integer[5];
+        iconIds[0] = R.drawable.camera_icon;
+        iconIds[1] = R.drawable.history_list_icon;
+        iconIds[2] = R.drawable.maps_icon;
+        iconIds[3] = R.drawable.settings_icon;
+        iconIds[4] = R.drawable.logout_icon;
 
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
 
@@ -57,33 +74,31 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        // specify an adapter (see also next example)
-        mAdapter = new MyAdapter(getApplicationContext(), this, myDataset);
+        mAdapter = new MyAdapter(getApplicationContext(), this, iconIds);
         recyclerView.setAdapter(mAdapter);
 
-//        NavigatorAdapter navigatorAdapter = new NavigatorAdapter(getApplicationContext(), mNavigatorList, new NavigatorListener());
-//        mRecyclerView.setAdapter(navigatorAdapter);
-
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.camera_nav, R.id.maps_nav, R.id.list_nav)
-                .setDrawerLayout(drawer)
+                .setDrawerLayout(mDrawerLayout)
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
+            @Override
+            public void onDestinationChanged(@NonNull NavController controller,
+                                             @NonNull NavDestination destination, @Nullable Bundle arguments) {
+                if(destination.getId() == R.id.login_nav) {
+                    toolbar.setVisibility(View.GONE);
+
+                } else {
+                    toolbar.setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 
     @Override
@@ -92,27 +107,36 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
 
         switch (position) {
             case 0:
-
-
                 action = CameraFragmentDirections.actionGlobalCameraNav();
                 navController.navigate(action);
+                mDrawerLayout.closeDrawers();
 
                 break;
             case 1:
-
                 action = ListFragmentDirections.actionGlobalListNav();
                 navController.navigate(action);
+                mDrawerLayout.closeDrawers();
 
                 break;
             case 2:
-
                 action = MapsFragmentDirections.actionGlobalMapsNav();
                 navController.navigate(action);
+                mDrawerLayout.closeDrawers();
 
                 break;
             case 3:
                 break;
+            case 4:
+                mGoogleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                navController.navigate(R.id.login_nav);
+                                loginViewModel.revokeAuth();
+                                mDrawerLayout.closeDrawers();
+                            }
+                        });
 
+                break;
         }
     }
 
@@ -130,8 +154,6 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
-
-
 
 
 }

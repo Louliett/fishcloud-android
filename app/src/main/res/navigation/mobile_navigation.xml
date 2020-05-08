@@ -23,7 +23,7 @@
     <action android:id="@+id/action_global_list_nav" app:destination="@id/list_nav" />
     <action android:id="@+id/action_global_maps_nav" app:destination="@id/maps_nav" />
     <fragment
-        android:id="@+id/loginFragment"
+        android:id="@+id/login_nav"
         android:name="com.example.fishcloud.ui.login.LoginFragment"
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" />
