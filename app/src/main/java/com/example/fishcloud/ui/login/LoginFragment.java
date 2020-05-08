@@ -40,8 +40,6 @@ import okhttp3.Response;
 public class LoginFragment extends Fragment {
     private LoginViewModel loginViewModel;
 
-    private GoogleSignInClient mGoogleSignInClient;
-
     private final int RC_SIGN_IN = 1;
 
 
@@ -55,11 +53,6 @@ public class LoginFragment extends Fragment {
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_login, container, false);
 
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(getContext(), gso);
 
 
         return root;
@@ -101,7 +94,7 @@ public class LoginFragment extends Fragment {
                                 break;
                             case INVALID_AUTHENTICATION:
                                 Snackbar.make(root,
-                                        "Login first",
+                                        "Sign in first",
                                         Snackbar.LENGTH_SHORT
                                 ).show();
                                 break;
@@ -111,7 +104,7 @@ public class LoginFragment extends Fragment {
     }
 
     private void signIn() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        Intent signInIntent = loginViewModel.googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 

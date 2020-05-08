@@ -47,7 +47,7 @@ public class CameraFragment extends Fragment {
                     public void onChanged(LoginViewModel.AuthenticationState authenticationState) {
                         switch (authenticationState) {
                             case AUTHENTICATED:
-                                
+
                                 break;
                             case UNAUTHENTICATED:
                                 navController.navigate(R.id.login_nav);

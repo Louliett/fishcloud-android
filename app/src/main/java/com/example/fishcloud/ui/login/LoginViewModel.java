@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.fishcloud.data.login.LoginRepository;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 
 public class LoginViewModel extends ViewModel {
     public enum AuthenticationState {
@@ -16,14 +17,18 @@ public class LoginViewModel extends ViewModel {
     final public MutableLiveData<AuthenticationState> authenticationState =
             new MutableLiveData<>();
     public String displayName;
+    public GoogleSignInClient googleSignInClient;
 
 
     public LoginViewModel() {
-
         authenticationState.setValue(AuthenticationState.UNAUTHENTICATED);
         displayName = "";
+
     }
 
+    public void setGoogleSignInClient(GoogleSignInClient googleSignInClient) {
+        this.googleSignInClient = googleSignInClient;
+    }
 
     public void authenticate(GoogleSignInAccount account) {
         if (account != null) {

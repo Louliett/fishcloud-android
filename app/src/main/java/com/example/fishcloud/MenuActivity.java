@@ -59,6 +59,7 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        loginViewModel.setGoogleSignInClient(mGoogleSignInClient);
 
         iconIds = new Integer[5];
         iconIds[0] = R.drawable.camera_icon;
