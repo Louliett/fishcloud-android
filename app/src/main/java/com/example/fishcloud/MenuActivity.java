@@ -3,6 +3,7 @@ package com.example.fishcloud;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,6 +45,9 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
     private LoginViewModel loginViewModel;
 
     private GoogleSignInClient mGoogleSignInClient;
+    private int backButtonCount = 0;
+
+    private int currentDestination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +64,7 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         loginViewModel.setGoogleSignInClient(mGoogleSignInClient);
+        loginViewModel.authenticate(GoogleSignIn.getLastSignedInAccount(this));
 
         iconIds = new Integer[5];
         iconIds[0] = R.drawable.camera_icon;
@@ -92,12 +97,20 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
             @Override
             public void onDestinationChanged(@NonNull NavController controller,
                                              @NonNull NavDestination destination, @Nullable Bundle arguments) {
-                if(destination.getId() == R.id.login_nav) {
+                currentDestination = destination.getId();
+                if (destination.getId() == R.id.login_nav) {
                     toolbar.setVisibility(View.GONE);
+                    backButtonCount = 0;
+                    System.out.println("Changed to login fragment ");
 
+                } else if (destination.getId() == R.id.camera_nav) {
+                    backButtonCount = 0;
+                    System.out.println("Back pressed " + backButtonCount);
+                    System.out.println("Changed to camera fragment ");
                 } else {
                     toolbar.setVisibility(View.VISIBLE);
                 }
+
             }
         });
     }
@@ -129,13 +142,13 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
                 break;
             case 4:
                 mGoogleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                navController.navigate(R.id.login_nav);
-                                loginViewModel.revokeAuth();
-                                mDrawerLayout.closeDrawers();
-                            }
-                        });
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        navController.navigate(R.id.login_nav);
+                        loginViewModel.revokeAuth();
+                        mDrawerLayout.closeDrawers();
+                    }
+                });
 
                 break;
         }
@@ -155,6 +168,4 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
-
-
 }

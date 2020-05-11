@@ -35,7 +35,7 @@ public class LoginViewModel extends ViewModel {
             authenticationState.setValue(AuthenticationState.AUTHENTICATED);
             displayName = account.getDisplayName();
         } else {
-            authenticationState.setValue(AuthenticationState.INVALID_AUTHENTICATION);
+            authenticationState.setValue(AuthenticationState.UNAUTHENTICATED);
         }
     }
 

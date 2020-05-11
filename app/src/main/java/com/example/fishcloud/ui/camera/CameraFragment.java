@@ -1,7 +1,11 @@
 package com.example.fishcloud.ui.camera;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -10,17 +14,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.example.fishcloud.R;
 import com.example.fishcloud.ui.login.LoginViewModel;
-
+import com.google.android.material.snackbar.Snackbar;
 
 
 public class CameraFragment extends Fragment {
     private LoginViewModel loginViewModel;
+    private int backButtonCount;
 
     public CameraFragment() {
         // Required empty public constructor
@@ -38,6 +39,7 @@ public class CameraFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        backButtonCount = 0;
 
 
         final NavController navController = Navigation.findNavController(view);
@@ -55,6 +57,24 @@ public class CameraFragment extends Fragment {
                         }
                     }
                 });
+
+        final View root = view;
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (backButtonCount > 1) {
+                            requireActivity().finish();
+                        } else {
+                            Snackbar.make(root,
+                                    "Press again to exit",
+                                    Snackbar.LENGTH_SHORT
+                            ).show();
+                        }
+                    }
+                });
+
     }
 
 }
