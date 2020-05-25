@@ -133,7 +133,7 @@ public class LoginFragment extends Fragment {
 
             System.out.println(account.getEmail());
             System.out.println(account.getDisplayName());
-            //  getWebservice(account.getEmail(), account.getDisplayName());
+            //  registerUser(account.getEmail(), account.getDisplayName());
 
         } catch (ApiException e) {
             Log.w("login fail", "signInResult:failed code=" + e.getStatusCode());
@@ -144,7 +144,7 @@ public class LoginFragment extends Fragment {
 
 
 
-    private void getWebservice(String email, String displayName) {
+    private void registerUser(String email, String displayName) {
 
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
@@ -182,6 +182,8 @@ public class LoginFragment extends Fragment {
                 });
             }
         });
+
+
     }
 
 }

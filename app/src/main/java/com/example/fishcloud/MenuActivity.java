@@ -45,9 +45,6 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
     private LoginViewModel loginViewModel;
 
     private GoogleSignInClient mGoogleSignInClient;
-    private int backButtonCount = 0;
-
-    private int currentDestination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,17 +94,10 @@ public class MenuActivity extends AppCompatActivity implements RecyclerViewClick
             @Override
             public void onDestinationChanged(@NonNull NavController controller,
                                              @NonNull NavDestination destination, @Nullable Bundle arguments) {
-                currentDestination = destination.getId();
                 if (destination.getId() == R.id.login_nav) {
                     toolbar.setVisibility(View.GONE);
-                    backButtonCount = 0;
-                    System.out.println("Changed to login fragment ");
 
-                } else if (destination.getId() == R.id.camera_nav) {
-                    backButtonCount = 0;
-                    System.out.println("Back pressed " + backButtonCount);
-                    System.out.println("Changed to camera fragment ");
-                } else {
+                }else {
                     toolbar.setVisibility(View.VISIBLE);
                 }
 
