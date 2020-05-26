@@ -20,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -39,10 +38,16 @@ import androidx.navigation.Navigation;
 
 import com.example.fishcloud.R;
 import com.example.fishcloud.ui.login.LoginViewModel;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,6 +76,12 @@ public class CameraFragment extends Fragment {
     private final String EMPTY_FIELD_ERROR = "Field cannot be empty";
     private boolean correct;
     private File uploadFile;
+    private List<String> fishName;
+    private Spinner fishNameSpinner;
+    private ArrayAdapter<String> adapter;
+    private EditText length;
+    private EditText width;
+    private EditText weight;
 
     public CameraFragment() {
         // Required empty public constructor
@@ -87,21 +98,10 @@ public class CameraFragment extends Fragment {
         backButtonCount = 0;
 
         Button capture = view.findViewById(R.id.button_capture);
-        final EditText length = view.findViewById(R.id.txt_length);
-        final EditText width  = view.findViewById(R.id.txt_width);
-        final EditText weight = view.findViewById(R.id.txt_weight);
-        final Spinner fishNameSpinner = view.findViewById(R.id.spinner);
+        length = view.findViewById(R.id.txt_length);
+        width = view.findViewById(R.id.txt_width);
+        weight = view.findViewById(R.id.txt_weight);
 
-        try {
-
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
-                    android.R.layout.simple_list_item_1, getFishNames());
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-            fishNameSpinner.setAdapter(adapter);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
 
         fishDisplay = view.findViewById(R.id.image_display);
         fishDisplay.setVisibility(View.GONE);
@@ -112,31 +112,32 @@ public class CameraFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                if (length.getText().toString().trim().length() == 0){
+                if (length.getText().toString().trim().length() == 0) {
                     length.setError(EMPTY_FIELD_ERROR);
                     length.requestFocus();
                     return;
                 }
 
-                if( width.getText().toString().trim().length() == 0){
+                if (width.getText().toString().trim().length() == 0) {
                     width.setError(EMPTY_FIELD_ERROR);
                     width.requestFocus();
                     return;
                 }
 
-                if (weight.getText().toString().trim().length() == 0){
+                if (weight.getText().toString().trim().length() == 0) {
                     weight.setError(EMPTY_FIELD_ERROR);
                     weight.requestFocus();
-                  return;
+                    return;
                 }
 
-                if(uploadFile == null) {
+                if (uploadFile == null) {
+                    Toast.makeText(getContext(), "Take photo first", Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 correct = true;
 
-                if(!correct)
+                if (!correct)
                     return;
 
                 locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -144,25 +145,38 @@ public class CameraFragment extends Fragment {
                     OnGPS();
                 } else {
                     String[] location = getLocation();
-                    Toast.makeText(getContext(), "Latitude : " + location[0] + " Longitude: " + location[1], Toast.LENGTH_LONG).show();
                     if (location[0] != null && location[1] != null) {
                         Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
-                        //List<Address> addresses =geocoder.getFromLocation(latitude, longitude, 1);
 
+
+                        String address = "Unidentified";
                         try {
                             List<Address> addresses = geocoder.getFromLocation(Double.parseDouble(location[0]), Double.parseDouble(location[1]), 1);
-                            String address = addresses.get(0).getSubLocality();
-                            String cityName = addresses.get(0).getLocality();
-                            String stateName = addresses.get(0).getAdminArea();
+                            while (addresses.size() == 0) {
+                                addresses = geocoder.getFromLocation(Double.parseDouble(location[0]), Double.parseDouble(location[1]), 1);
+                            }
+                            if (addresses.size() > 0) {
+                                address = addresses.get(0).getAdminArea();
 
-                            uploadFish(fishNameSpinner.getSelectedItem().toString(),Float.parseFloat(weight.toString()),
-                                    Integer.parseInt(length.toString()),Integer.parseInt(width.toString()),"",
-                                    new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()),uploadFile );
-
-                            Toast.makeText(getContext(), "Address : " + address + " City: " +cityName, Toast.LENGTH_LONG).show();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            }
+                        } catch (Exception e) {
+                            System.out.print(e.getMessage());
                         }
+                        System.out.println("Location name: " + address);
+
+
+                        System.out.println("Selected name:" + fishNameSpinner.getSelectedItem().toString());
+                        System.out.println("Weight:" + weight.getText().toString());
+                        System.out.println("Length:" + length.getText().toString());
+                        System.out.println("Width:" + width.getText().toString());
+                        System.out.println("Email " + GoogleSignIn.getLastSignedInAccount(getContext()).getEmail());
+                        System.out.println("Time " + new Date().getTime());
+                        System.out.println("File name " + uploadFile.getName());
+
+                        uploadFish(fishNameSpinner.getSelectedItem().toString(), Float.parseFloat(weight.getText().toString()), Integer.parseInt(length.getText().toString()),
+                                Integer.parseInt(width.getText().toString()), GoogleSignIn.getLastSignedInAccount(getContext()).getEmail(),
+                                String.valueOf(new Date().getTime()), uploadFile, location[0], location[1], "Ivosjon");
+
                     }
                 }
             }
@@ -179,7 +193,7 @@ public class CameraFragment extends Fragment {
                     String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                     try {
                         uploadFile = File.createTempFile(
-                                loginViewModel.displayName + " " + timeStamp,
+                                loginViewModel.displayName + "_" + timeStamp,
                                 ".jpg"
                         );
                     } catch (IOException ex) {
@@ -198,6 +212,11 @@ public class CameraFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         final View root = view;
+
+        fishNameSpinner = view.findViewById(R.id.spinner);
+
+
+        getFishNames();
 
 
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Welcome, " + loginViewModel.displayName);
@@ -241,30 +260,46 @@ public class CameraFragment extends Fragment {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             fishDisplay.setImageBitmap(imageBitmap);
+
+            createPhoto(imageBitmap);
+
             fishDisplay.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void createPhoto(Bitmap bitmap) {
+
+        OutputStream os;
+        try {
+            os = new FileOutputStream(uploadFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+            os.flush();
+            os.close();
+        } catch (Exception e) {
+            Log.e(getClass().getSimpleName(), "Error writing bitmap", e);
         }
     }
 
 
     //
     private void uploadFish(String fishName, float weight, int length, int width,
-                            String email, String date, File image) {
+                            String email, String date, final File image, String lat, String longi, String locName) {
 
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
-        MediaType mediaType = MediaType.parse("text/plain");
+        // MediaType mediaType = MediaType.parse("text/plain");
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
                 .addFormDataPart("fish_name", fishName)
                 .addFormDataPart("kg", String.valueOf(weight))
                 .addFormDataPart("length", String.valueOf(length))
                 .addFormDataPart("width", String.valueOf(width))
-                .addFormDataPart("location_name", "Ivosjon")
-                .addFormDataPart("latitude", "56.111159")
-                .addFormDataPart("longitude", "14.440419")
+                .addFormDataPart("location_name", locName)
+                .addFormDataPart("latitude", lat)
+                .addFormDataPart("longitude", longi)
                 .addFormDataPart("email", email)
                 .addFormDataPart("timestamp", date)
                 .addFormDataPart("fishImage", image.getName(),
-                        RequestBody.create(MediaType.parse("application/octet-stream"),
+                        RequestBody.create(MediaType.parse("image/jpeg"),
                                 image))
                 .build();
 
@@ -291,6 +326,10 @@ public class CameraFragment extends Fragment {
                     @Override
                     public void run() {
                         try {
+                            Toast.makeText(getContext(), "Upload successful!", Toast.LENGTH_SHORT).show();
+                            fishDisplay.setVisibility(View.GONE);
+                            uploadFile = null;
+
                             System.out.println(response.body().string());
                         } catch (IOException ioe) {
                             System.out.println("Error during get body");
@@ -321,14 +360,12 @@ public class CameraFragment extends Fragment {
         return retVal;
     }
 
-    private List<String> getFishNames() {
-
-        List<String> retVal = new ArrayList<>();
+    private void getFishNames() {
 
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         Request request = new Request.Builder()
-                .url("https://fishcloud.azurewebsites.net/locations/get-name")
+                .url("https://fishcloud.azurewebsites.net/fish/get-name")
                 .method("GET", null)
                 .build();
         client.newCall(request).enqueue(new Callback() {
@@ -349,7 +386,12 @@ public class CameraFragment extends Fragment {
                     @Override
                     public void run() {
                         try {
-                            System.out.println(response.body().string());
+
+                            fishName = parseFishNameResponse(response.body().string());
+                            adapter = new ArrayAdapter<String>(getContext(),
+                                    android.R.layout.simple_list_item_1, fishName);
+                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            fishNameSpinner.setAdapter(adapter);
                         } catch (IOException ioe) {
                             System.out.println("Error during get body");
                         }
@@ -357,7 +399,6 @@ public class CameraFragment extends Fragment {
                 });
             }
         });
-        return retVal;
     }
 
     private void OnGPS() {
@@ -397,6 +438,26 @@ public class CameraFragment extends Fragment {
             }
         }
         return val;
+    }
+
+    private List<String> parseFishNameResponse(String jsonString) {
+        List<String> fishNames = null;
+
+        System.out.println(jsonString);
+        JSONArray obj = null;
+        try {
+            fishNames = new ArrayList<>();
+            obj = new JSONArray(jsonString);
+
+            for (int i = 0; i < obj.length(); i++) {
+                String name = obj.getJSONObject(i).getString("name");
+                fishNames.add(name);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return fishNames;
     }
 
 

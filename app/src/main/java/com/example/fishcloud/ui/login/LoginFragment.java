@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -73,9 +72,6 @@ public class LoginFragment extends Fragment {
         final NavController navController = Navigation.findNavController(view);
 
 
-
-
-
         final View root = view;
         loginViewModel.authenticationState.observe(getViewLifecycleOwner(),
                 new Observer<LoginViewModel.AuthenticationState>() {
@@ -133,7 +129,7 @@ public class LoginFragment extends Fragment {
 
             System.out.println(account.getEmail());
             System.out.println(account.getDisplayName());
-            //  registerUser(account.getEmail(), account.getDisplayName());
+             registerUser(account.getEmail(), account.getDisplayName());
 
         } catch (ApiException e) {
             Log.w("login fail", "signInResult:failed code=" + e.getStatusCode());

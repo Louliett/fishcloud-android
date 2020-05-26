@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#7C4DFF"
+    android:gravity="center_vertical"
     android:orientation="vertical"
+    android:padding="10dp"
     tools:context=".ui.camera.CameraFragment"
     tools:visibility="visible">
 
@@ -12,12 +15,14 @@
         android:id="@+id/image_display"
         android:layout_width="match_parent"
         android:layout_height="300dp"
+        android:cropToPadding="true"
         tools:visibility="gone" />
 
     <Button
         android:id="@+id/button_capture"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/roudned_button"
         android:text="Capture photo" />
 
     <TextView
@@ -72,6 +77,8 @@
         android:id="@+id/button_submit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/roudned_button"
+        android:backgroundTint="#6200EA"
         android:text="Submit" />
 
 </LinearLayout>
